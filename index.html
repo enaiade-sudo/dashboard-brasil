@@ -3,11 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Master General Brasil | Dashboard Executivo</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Lato:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <title>Master General Brasil | Dashboard</title>
     
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -15,188 +11,169 @@
     <style>
         :root {
             --primary: #0f5132; /* Verde Master General */
-            --secondary: #1a1a1a;
-            --bg: #f4f7f6;
+            --primary-hover: #0b3d25;
+            --bg: #f8f9fa;
             --card-bg: #ffffff;
-            --text-dark: #2d3436;
-            --text-light: #636e72;
-            --churn-color: #d63031; /* Vermelho Churn */
+            --text-main: #212529;
+            --text-muted: #6c757d;
+            --danger: #dc3545; /* Vermelho Churn */
+            --warning: #ffc107; /* Amarelo Implantação */
+            --success: #198754; /* Verde Sucesso */
         }
 
-        * { box-sizing: border-box; }
-
-        body {
-            font-family: 'Lato', sans-serif;
-            background-color: var(--bg);
+        * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            color: var(--text-dark);
         }
 
-        h1, h2, h3 { font-family: 'Poppins', sans-serif; margin: 0; }
+        body {
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            padding-bottom: 50px;
+        }
 
-        /* Barra Superior */
+        /* Topo / Navbar */
         .navbar {
-            background: var(--card-bg);
-            padding: 1rem 2rem;
+            background-color: var(--card-bg);
+            padding: 15px 30px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 2px 15px rgba(0,0,0,0.05);
-            position: sticky;
-            top: 0;
-            z-index: 1000;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
 
         .brand {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 1.2rem;
+            font-size: 20px;
             font-weight: 700;
             color: var(--primary);
-        }
-
-        .btn-upload {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 0.6rem 1.2rem;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: 0.3s;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
         }
 
-        .btn-upload:hover { 
-            transform: translateY(-2px); 
-            box-shadow: 0 4px 12px rgba(15,81,50,0.2); 
+        .btn-principal {
+            background-color: var(--primary);
+            color: #ffffff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            display: inline-block;
+        }
+
+        .btn-principal:hover {
+            background-color: var(--primary-hover);
         }
 
         .container {
-            max-width: 1400px;
-            margin: 2rem auto;
-            padding: 0 2rem;
+            max-width: 1300px;
+            margin: 30px auto;
+            padding: 0 20px;
         }
 
-        /* Os 4 Totalizadores Solicitados */
-        .kpi-grid {
+        /* Tela de Boas-vindas (Upload Inicial) */
+        .tela-upload {
+            background-color: var(--card-bg);
+            border: 2px dashed #ced4da;
+            border-radius: 12px;
+            padding: 80px 40px;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .tela-upload h2 {
+            font-size: 24px;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .tela-upload p {
+            color: var(--text-muted);
+            margin-bottom: 25px;
+        }
+
+        /* Grid dos 4 Totalizadores no Cabeçalho */
+        .grid-kpis {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 1.5rem;
-            margin-bottom: 2rem;
+            gap: 20px;
+            margin-bottom: 30px;
         }
 
-        .kpi-card {
-            background: var(--card-bg);
-            padding: 1.5rem;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
-            border-left: 5px solid var(--primary);
-            transition: 0.3s;
+        @media (max-width: 768px) {
+            .grid-kpis { grid-template-columns: 1fr 1fr; }
+        }
+        @media (max-width: 480px) {
+            .grid-kpis { grid-template-columns: 1fr; }
         }
 
-        .kpi-card.churn { border-left-color: var(--churn-color); }
+        .card-kpi {
+            background-color: var(--card-bg);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            border-top: 4px solid var(--primary);
+        }
 
-        .kpi-label {
-            font-size: 0.85rem;
+        .card-kpi.churn { border-top-color: var(--danger); }
+        .card-kpi.implantacao { border-top-color: var(--warning); }
+        .card-kpi.implantado { border-top-color: var(--success); }
+
+        .kpi-titulo {
+            font-size: 13px;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            color: var(--text-light);
+            color: var(--text-muted);
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            margin-bottom: 5px;
+        }
+
+        .kpi-numero {
+            font-size: 32px;
             font-weight: 700;
-            margin-bottom: 0.5rem;
-            display: block;
+            color: #1a1a1a;
+            margin-bottom: 5px;
         }
 
-        .kpi-value {
-            font-size: 2.2rem;
-            font-weight: 700;
-            color: var(--secondary);
+        .kpi-detalhe {
+            font-size: 12px;
+            color: var(--text-muted);
         }
 
-        .kpi-icon {
-            float: right;
-            font-size: 1.5rem;
-            color: #dfe6e9;
-        }
-
-        /* Estrutura de Conteúdo */
-        .main-grid {
+        /* Layout de Conteúdo Inferior */
+        .grid-conteudo {
             display: grid;
             grid-template-columns: 2fr 1fr;
-            gap: 1.5rem;
+            gap: 20px;
         }
 
-        .card {
-            background: var(--card-bg);
-            padding: 1.5rem;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+        @media (max-width: 992px) {
+            .grid-conteudo { grid-template-columns: 1fr; }
         }
 
-        .card-header {
+        .card-painel {
+            background-color: var(--card-bg);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+
+        .card-titulo {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 1.5rem;
-            padding-bottom: 0.8rem;
-            border-bottom: 1px solid #eee;
         }
 
-        /* Tela de Boas-vindas */
-        .welcome-area {
-            text-align: center;
-            padding: 100px 20px;
-            background: white;
-            border-radius: 20px;
-            border: 2px dashed #ccc;
-        }
-
-        .hidden { display: none !important; }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.9rem;
-        }
-
-        th {
-            text-align: left;
-            padding: 12px;
-            background: #f8f9fa;
-            color: var(--text-light);
-            font-weight: 600;
-        }
-
-        td {
-            padding: 12px;
-            border-bottom: 1px solid #eee;
-        }
-
-        .status-pill {
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 700;
-            text-transform: uppercase;
-        }
-
-        .pill-impl { background: #fff3cd; color: #856404; } /* Amarelo */
-        .pill-done { background: #d4edda; color: #155724; } /* Verde */
-        .pill-churn { background: #f8d7da; color: #721c24; } /* Vermelho */
-    </style>
-</head>
-<body>
-
-    <nav class="navbar">
-        <div class="brand">
-            <i class="fa-solid fa-chart-line"></i>
-            <span>Master General Brasil</span>
-        </div>
-        <div>
-            <input type="file" id="fileInput" accept=".xlsx, .xls" style="display:none;">
-            <button class="btn-upload" onclick="document.getElementById('fileInput').click()">
-                <i class="fa-solid fa-file
+        .busca-input {
+            padding: 6px 12px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size:
