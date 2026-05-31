@@ -20,7 +20,6 @@
             padding: 0;
             color: #333;
         }
-        /* Topo do site igual ao seu */
         .header {
             background-color: var(--cor-card);
             padding: 15px 30px;
@@ -50,7 +49,6 @@
             margin: 30px auto;
             padding: 0 20px;
         }
-        /* Área de arrastar arquivo */
         .upload-zone {
             background: var(--cor-card);
             border: 2px dashed #ccc;
@@ -64,7 +62,6 @@
             border-color: var(--cor-principal);
             background: #f0f7f4;
         }
-        /* Configurações do Dashboard */
         .config-panel {
             background: white;
             padding: 20px;
@@ -79,7 +76,6 @@
             border-radius: 4px;
             margin-right: 10px;
         }
-        /* Área dos Gráficos */
         .dashboard-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -115,8 +111,8 @@
             <small style="color: #666;">Formato suportado: .xlsx</small>
             
             <div style="margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px;">
-                <p style="font-size: 13px; color: #888;">Quer automação total? Cole o link da sua planilha pública abaixo:</p>
-                <input type="text" id="linkNuvem" placeholder="Link do Google Sheets (CSV) ou OneDrive" style="width: 80%; max-width: 500px;" onclick="event.stopPropagation();">
+                <p style="font-size: 13px; color: #888;">Quer automação total? Cole o link CSV da sua planilha pública abaixo:</p>
+                <input type="text" id="linkNuvem" placeholder="Link do Google Sheets (Exportado como CSV)" style="width: 80%; max-width: 500px;" onclick="event.stopPropagation();">
                 <button class="btn-carregar" style="padding: 7px 15px; font-size: 12px;" onclick="conectarLinkNuvem(event)">Conectar</button>
             </div>
         </div>
@@ -126,13 +122,13 @@
             <label>Eixo X (Categorias): </label>
             <select id="colunaX" onchange="atualizarGrafico()"></select>
             
-            <label>Eixo Y (Valores/Números): </label>
+            <label>Eixo Y (Valores numéricos): </label>
             <select id="colunaY" onchange="atualizarGrafico()"></select>
         </div>
 
         <div class="dashboard-grid hidden" id="dashboardArea">
             <div class="card" style="grid-column: span 2;">
-                <h3>Resumo dos Dados</h3>
+                <h3>Resumo dos Dados (Primeiras Linhas)</h3>
                 <div style="overflow-x: auto; max-height: 200px;">
                     <table id="tabelaDados" border="1" style="width:100%; border-collapse:collapse; text-align:left; font-size:14px;"></table>
                 </div>
@@ -153,7 +149,6 @@
         let meuGrafico1 = null;
         let meuGrafico2 = null;
 
-        // Ouvintes para quando você arrastar ou selecionar o arquivo
         document.getElementById('fileInput').addEventListener('change', lerArquivo);
         const dropZone = document.getElementById('dropZone');
         
@@ -168,19 +163,17 @@
             }
         });
 
-        // Função que lê o arquivo Excel transformando em dados que o site entende
         function lerArquivo(e) {
             const arquivo = e.target.files[0];
             if (!arquivo) return;
 
             const leitor = new FileReader();
             leitor.onload = function(evento) {
-                const dados Brutos = new Uint8Array(evento.target.result);
+                const dadosBrutos = new Uint8Array(evento.target.result);
                 const livro = XLSX.read(dadosBrutos, { type: 'array' });
                 const primeiraAba = livro.SheetNames[0];
                 const abaData = livro.Sheets[primeiraAba];
                 
-                // Transforma a aba em uma lista de dados
                 dadosPlanilha = XLSX.utils.sheet_to_json(abaData);
                 
                 if(dadosPlanilha.length > 0) {
@@ -190,7 +183,6 @@
             leitor.readAsArrayBuffer(arquivo);
         }
 
-        // Configura as opções de colunas dinamicamente
         function construirPainel() {
             document.getElementById('dropZone').classList.add('hidden');
             document.getElementById('configPanel').style.display = 'block';
@@ -208,7 +200,6 @@
                 selectY.options.add(new Option(col, col));
             });
 
-            // Se tiver mais de uma coluna, seleciona a segunda pro eixo Y automaticamente
             if(colunas.length > 1) selectY.selectedIndex = 1;
 
             mostrarTabela(colunas);
@@ -217,15 +208,14 @@
 
         function mostrarTabela(colunas) {
             const tabela = document.getElementById('tabelaDados');
-            let html = 'tr' + colunas.map(c => `th style="padding:8px; background:#eee;"${c}/th`).join('') + '/tr';
+            let html = '<tr>' + colunas.map(c => `<th style="padding:8px; background:#eee;">${c}</th>`).join('') + '</tr>';
             
             dadosPlanilha.slice(0, 5).forEach(linha => {
-                html += 'tr' + colunas.map(c => `td style="padding:6px;"${linha[c] || ''}/td`).join('') + '/tr';
+                html += '<tr>' + colunas.map(c => `<td style="padding:6px;">${linha[c] || ''}</td>`).join('') + '</tr>';
             });
             tabela.innerHTML = html;
         }
 
-        // Desenha e atualiza os gráficos na tela conforme você muda as opções
         function atualizarGrafico() {
             const colX = document.getElementById('colunaX').value;
             const colY = document.getElementById('colunaY').value;
@@ -236,7 +226,6 @@
             if(meuGrafico1) meuGrafico1.destroy();
             if(meuGrafico2) meuGrafico2.destroy();
 
-            // Criando Gráfico de Barras
             meuGrafico1 = new Chart(document.getElementById('graficoBarras'), {
                 type: 'bar',
                 data: {
@@ -245,7 +234,6 @@
                 }
             });
 
-            // Criando Gráfico de Linhas
             meuGrafico2 = new Chart(document.getElementById('graficoLinhas'), {
                 type: 'line',
                 data: {
@@ -255,16 +243,14 @@
             });
         }
 
-        // Função opcional para conectar com planilha na nuvem automaticamente
         function conectarLinkNuvem(event) {
             event.stopPropagation();
             const link = document.getElementById('linkNuvem').value;
-            if(!link) return alert('Por favor, insira o link da sua planilha publicada.');
+            if(!link) return alert('Por favor, insira o link da sua planilha pública.');
 
             fetch(link)
                 .then(res => res.text())
                 .then(texto => {
-                    // Se for um link de CSV do Google Sheets
                     const linhas = texto.split('\n').map(l => l.split(','));
                     const colunas = linhas[0];
                     dadosPlanilha = [];
@@ -275,13 +261,11 @@
                         dadosPlanilha.push(obj);
                     }
                     construirPainel();
-                    // Salva no navegador para lembrar na próxima visita!
                     localStorage.setItem('link_planilha_master', link);
                 })
-                .catch(err => alert('Erro ao ler link. Verifique se ela foi "Publicada na Web" no formato CSV.'));
+                .catch(err => alert('Erro ao ler link. Verifique se ela foi "Publicada na Web" como CSV.'));
         }
 
-        // Verifica se já tinha um link salvo antes para carregar sozinho
         window.onload = function() {
             const linkSalvo = localStorage.getItem('link_planilha_master');
             if(linkSalvo) {
