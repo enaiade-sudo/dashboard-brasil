@@ -3,276 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Master General Brasil - Dashboard</title>
+    <title>Master General Brasil | Executivo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Lato:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <style>
         :root {
-            --cor-principal: #0f5132;
-            --cor-fundo: #f8f9fa;
-            --cor-card: #ffffff;
+            --primary: #0f5132; /* Verde Master */
+            --secondary: #1a1a1a;
+            --accent: #20c997;
+            --bg: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-dark: #2d3436;
+            --text-light: #636e72;
+            --churn-color: #d63031;
         }
+
+        * { box-sizing: border-box; }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--cor-fundo);
+            font-family: 'Lato', sans-serif;
+            background-color: var(--bg);
             margin: 0;
             padding: 0;
-            color: #333;
+            color: var(--text-dark);
         }
-        .header {
-            background-color: var(--cor-card);
-            padding: 15px 30px;
+
+        h1, h2, h3 { font-family: 'Poppins', sans-serif; margin: 0; }
+
+        .navbar {
+            background: var(--card-bg);
+            padding: 1rem 2rem;
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-        .logo {
-            display: flex;
-            align-items: center;
-            font-weight: bold;
-            font-size: 18px;
-            color: var(--cor-principal);
-        }
-        .btn-carregar {
-            background-color: var(--cor-principal);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 500;
-        }
-        .container {
-            max-width: 1200px;
-            margin: 30px auto;
-            padding: 0 20px;
-        }
-        .upload-zone {
-            background: var(--cor-card);
-            border: 2px dashed #ccc;
-            border-radius: 12px;
-            padding: 60px 20px;
-            text-align: center;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-        .upload-zone:hover {
-            border-color: var(--cor-principal);
-            background: #f0f7f4;
-        }
-        .config-panel {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            margin-top: 20px;
-            display: none;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        }
-        select, input[type="text"] {
-            padding: 8px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            margin-right: 10px;
-        }
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-top: 20px;
-        }
-        .card {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        }
-        .hidden { display: none; }
-    </style>
-</head>
-<body>
-
-    <div class="header">
-        <div class="logo">
-            <span style="margin-right:10px;">📊</span> Master General Brasil
-        </div>
-        <div>
-            <input type="file" id="fileInput" accept=".xlsx, .xls" style="display:none;">
-            <button class="btn-carregar" onclick="document.getElementById('fileInput').click()">Carregar planilha</button>
-        </div>
-    </div>
-
-    <div class="container">
-        <div class="upload-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
-            <span style="font-size: 48px;">📅</span>
-            <h3>Carregue a planilha Master General Brasil</h3>
-            <p>Clique em "Carregar planilha" ou arraste o arquivo .xlsx aqui para visualizar os dados.</p>
-            <small style="color: #666;">Formato suportado: .xlsx</small>
-            
-            <div style="margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px;">
-                <p style="font-size: 13px; color: #888;">Quer automação total? Cole o link CSV da sua planilha pública abaixo:</p>
-                <input type="text" id="linkNuvem" placeholder="Link do Google Sheets (Exportado como CSV)" style="width: 80%; max-width: 500px;" onclick="event.stopPropagation();">
-                <button class="btn-carregar" style="padding: 7px 15px; font-size: 12px;" onclick="conectarLinkNuvem(event)">Conectar</button>
-            </div>
-        </div>
-
-        <div class="config-panel" id="configPanel">
-            <h4>⚙️ Configure seu Gráfico</h4>
-            <label>Eixo X (Categorias): </label>
-            <select id="colunaX" onchange="atualizarGrafico()"></select>
-            
-            <label>Eixo Y (Valores numéricos): </label>
-            <select id="colunaY" onchange="atualizarGrafico()"></select>
-        </div>
-
-        <div class="dashboard-grid hidden" id="dashboardArea">
-            <div class="card" style="grid-column: span 2;">
-                <h3>Resumo dos Dados (Primeiras Linhas)</h3>
-                <div style="overflow-x: auto; max-height: 200px;">
-                    <table id="tabelaDados" border="1" style="width:100%; border-collapse:collapse; text-align:left; font-size:14px;"></table>
-                </div>
-            </div>
-            <div class="card">
-                <h3>Gráfico de Barras</h3>
-                <canvas id="graficoBarras"></canvas>
-            </div>
-            <div class="card">
-                <h3>Gráfico de Linhas</h3>
-                <canvas id="graficoLinhas"></canvas>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        let dadosPlanilha = [];
-        let meuGrafico1 = null;
-        let meuGrafico2 = null;
-
-        document.getElementById('fileInput').addEventListener('change', lerArquivo);
-        const dropZone = document.getElementById('dropZone');
-        
-        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.style.background = '#f0f7f4'; });
-        dropZone.addEventListener('dragleave', () => { dropZone.style.background = '#fff'; });
-        dropZone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            const arquivos = e.dataTransfer.files;
-            if(arquivos.length) {
-                document.getElementById('fileInput').files = arquivos;
-                lerArquivo({ target: { files: arquivos } });
-            }
-        });
-
-        function lerArquivo(e) {
-            const arquivo = e.target.files[0];
-            if (!arquivo) return;
-
-            const leitor = new FileReader();
-            leitor.onload = function(evento) {
-                const dadosBrutos = new Uint8Array(evento.target.result);
-                const livro = XLSX.read(dadosBrutos, { type: 'array' });
-                const primeiraAba = livro.SheetNames[0];
-                const abaData = livro.Sheets[primeiraAba];
-                
-                dadosPlanilha = XLSX.utils.sheet_to_json(abaData);
-                
-                if(dadosPlanilha.length > 0) {
-                    construirPainel();
-                }
-            };
-            leitor.readAsArrayBuffer(arquivo);
-        }
-
-        function construirPainel() {
-            document.getElementById('dropZone').classList.add('hidden');
-            document.getElementById('configPanel').style.display = 'block';
-            document.getElementById('dashboardArea').classList.remove('hidden');
-
-            const colunas = Object.keys(dadosPlanilha[0]);
-            const selectX = document.getElementById('colunaX');
-            const selectY = document.getElementById('colunaY');
-            
-            selectX.innerHTML = '';
-            selectY.innerHTML = '';
-
-            colunas.forEach(col => {
-                selectX.options.add(new Option(col, col));
-                selectY.options.add(new Option(col, col));
-            });
-
-            if(colunas.length > 1) selectY.selectedIndex = 1;
-
-            mostrarTabela(colunas);
-            atualizarGrafico();
-        }
-
-        function mostrarTabela(colunas) {
-            const tabela = document.getElementById('tabelaDados');
-            let html = '<tr>' + colunas.map(c => `<th style="padding:8px; background:#eee;">${c}</th>`).join('') + '</tr>';
-            
-            dadosPlanilha.slice(0, 5).forEach(linha => {
-                html += '<tr>' + colunas.map(c => `<td style="padding:6px;">${linha[c] || ''}</td>`).join('') + '</tr>';
-            });
-            tabela.innerHTML = html;
-        }
-
-        function atualizarGrafico() {
-            const colX = document.getElementById('colunaX').value;
-            const colY = document.getElementById('colunaY').value;
-
-            const etiquetas = dadosPlanilha.map(l => l[colX]);
-            const valores = dadosPlanilha.map(l => Number(l[colY]) || 0);
-
-            if(meuGrafico1) meuGrafico1.destroy();
-            if(meuGrafico2) meuGrafico2.destroy();
-
-            meuGrafico1 = new Chart(document.getElementById('graficoBarras'), {
-                type: 'bar',
-                data: {
-                    labels: etiquetas,
-                    datasets: [{ label: colY, data: valores, backgroundColor: '#0f5132' }]
-                }
-            });
-
-            meuGrafico2 = new Chart(document.getElementById('graficoLinhas'), {
-                type: 'line',
-                data: {
-                    labels: etiquetas,
-                    datasets: [{ label: colY, data: valores, borderColor: '#20c997', fill: false }]
-                }
-            });
-        }
-
-        function conectarLinkNuvem(event) {
-            event.stopPropagation();
-            const link = document.getElementById('linkNuvem').value;
-            if(!link) return alert('Por favor, insira o link da sua planilha pública.');
-
-            fetch(link)
-                .then(res => res.text())
-                .then(texto => {
-                    const linhas = texto.split('\n').map(l => l.split(','));
-                    const colunas = linhas[0];
-                    dadosPlanilha = [];
-                    for(let i=1; i < linhas.length; i++) {
-                        if (linhas[i].length < colunas.length) continue;
-                        let obj = {};
-                        colunas.forEach((col, idx) => { obj[col.trim()] = linhas[i][idx].trim(); });
-                        dadosPlanilha.push(obj);
-                    }
-                    construirPainel();
-                    localStorage.setItem('link_planilha_master', link);
-                })
-                .catch(err => alert('Erro ao ler link. Verifique se ela foi "Publicada na Web" como CSV.'));
-        }
-
-        window.onload = function() {
-            const linkSalvo = localStorage.getItem('link_planilha_master');
-            if(linkSalvo) {
-                document.getElementById('linkNuvem').value = linkSalvo;
-                conectarLinkNuvem({ stopPropagation: ()=>{} });
-            }
-        }
-    </script>
-</body>
-</html>
+            align
