@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Master General Brasil | Executivo</title>
+    <title>Master General Brasil | Dashboard Executivo</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Lato:wght@400;700&display=swap" rel="stylesheet">
@@ -14,14 +14,13 @@
     
     <style>
         :root {
-            --primary: #0f5132; /* Verde Master */
+            --primary: #0f5132; /* Verde Master General */
             --secondary: #1a1a1a;
-            --accent: #20c997;
             --bg: #f4f7f6;
             --card-bg: #ffffff;
             --text-dark: #2d3436;
             --text-light: #636e72;
-            --churn-color: #d63031;
+            --churn-color: #d63031; /* Vermelho Churn */
         }
 
         * { box-sizing: border-box; }
@@ -36,9 +35,168 @@
 
         h1, h2, h3 { font-family: 'Poppins', sans-serif; margin: 0; }
 
+        /* Barra Superior */
         .navbar {
             background: var(--card-bg);
             padding: 1rem 2rem;
             display: flex;
             justify-content: space-between;
-            align
+            align-items: center;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .btn-upload {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-upload:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 4px 12px rgba(15,81,50,0.2); 
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        /* Os 4 Totalizadores Solicitados */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .kpi-card {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+            border-left: 5px solid var(--primary);
+            transition: 0.3s;
+        }
+
+        .kpi-card.churn { border-left-color: var(--churn-color); }
+
+        .kpi-label {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-light);
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .kpi-value {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--secondary);
+        }
+
+        .kpi-icon {
+            float: right;
+            font-size: 1.5rem;
+            color: #dfe6e9;
+        }
+
+        /* Estrutura de Conteúdo */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 1.5rem;
+        }
+
+        .card {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.8rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        /* Tela de Boas-vindas */
+        .welcome-area {
+            text-align: center;
+            padding: 100px 20px;
+            background: white;
+            border-radius: 20px;
+            border: 2px dashed #ccc;
+        }
+
+        .hidden { display: none !important; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        th {
+            text-align: left;
+            padding: 12px;
+            background: #f8f9fa;
+            color: var(--text-light);
+            font-weight: 600;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .status-pill {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .pill-impl { background: #fff3cd; color: #856404; } /* Amarelo */
+        .pill-done { background: #d4edda; color: #155724; } /* Verde */
+        .pill-churn { background: #f8d7da; color: #721c24; } /* Vermelho */
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="brand">
+            <i class="fa-solid fa-chart-line"></i>
+            <span>Master General Brasil</span>
+        </div>
+        <div>
+            <input type="file" id="fileInput" accept=".xlsx, .xls" style="display:none;">
+            <button class="btn-upload" onclick="document.getElementById('fileInput').click()">
+                <i class="fa-solid fa-file
